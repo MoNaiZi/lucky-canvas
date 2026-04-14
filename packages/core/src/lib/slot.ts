@@ -34,7 +34,7 @@ export default class SlotMachine extends Lucky {
   // 默认样式
   private defaultStyle: DefaultStyleType = {}
   private _defaultStyle: Required<DefaultStyleType> = {} as Required<DefaultStyleType>
-  private endCallback: EndCallbackType = () => {}
+  private endCallback: EndCallbackType = () => { }
   // 离屏canvas
   private _offscreenCanvas?: HTMLCanvasElement
   private cellWidth = 0             // 格子宽度
@@ -75,7 +75,7 @@ export default class SlotMachine extends Lucky {
    * @param config 配置项
    * @param data 抽奖数据
    */
-   constructor (config: UserConfigType, data: SlotMachineConfig) {
+  constructor(config: UserConfigType, data: SlotMachineConfig) {
     super(config, {
       width: data.width,
       height: data.height
@@ -89,13 +89,24 @@ export default class SlotMachine extends Lucky {
     this.init()
   }
 
+  protected getImageCache(
+    key: any
+  ): any {
+    const res = this.ImageCache.get(key)
+    function unwrapImg(img: any) {
+      return img?.__v_raw || img?.raw || img
+    }
+
+    return unwrapImg(res)
+  }
+
   protected resize(): void {
     super.resize()
     this.draw()
     this.config.afterResize?.()
   }
 
-  protected initLucky (): void {
+  protected initLucky(): void {
     this.cellWidth = 0
     this.cellHeight = 0
     this.cellAndSpacing = 0
@@ -116,7 +127,7 @@ export default class SlotMachine extends Lucky {
    * 初始化数据
    * @param data
    */
-  private initData (data: SlotMachineConfig): void {
+  private initData(data: SlotMachineConfig): void {
     this.$set(this, 'width', data.width)
     this.$set(this, 'height', data.height)
     this.$set(this, 'blocks', data.blocks || [])
@@ -130,7 +141,7 @@ export default class SlotMachine extends Lucky {
   /**
    * 初始化属性计算
    */
-  private initComputed (): void {
+  private initComputed(): void {
     // 默认配置
     this.$computed(this, '_defaultConfig', () => {
       const config = {
@@ -166,7 +177,7 @@ export default class SlotMachine extends Lucky {
   /**
    * 初始化观察者
    */
-  private initWatch (): void {
+  private initWatch(): void {
     // 重置宽度
     this.$watch('width', (newVal: string | number) => {
       this.data.width = newVal
@@ -198,7 +209,7 @@ export default class SlotMachine extends Lucky {
   /**
    * 初始化 canvas 抽奖
    */
-  public async init (): Promise<void> {
+  public async init(): Promise<void> {
     this.initLucky()
     const { config } = this
     // 初始化前回调函数
@@ -212,27 +223,27 @@ export default class SlotMachine extends Lucky {
     config.afterInit?.call(this)
   }
 
-  private initImageCache (): Promise<void> {
+  private initImageCache(): Promise<void> {
     return new Promise((resolve) => {
       const willUpdateImgs = {
         blocks: this.blocks.map(block => block.imgs),
         prizes: this.prizes.map(prize => prize.imgs),
       }
-      ;(<(keyof typeof willUpdateImgs)[]>Object.keys(willUpdateImgs)).forEach(imgName => {
-        const willUpdate = willUpdateImgs[imgName]
-        // 循环遍历所有图片
-        const allPromise: Promise<void>[] = []
-        willUpdate && willUpdate.forEach((imgs, cellIndex) => {
-          imgs && imgs.forEach((imgInfo, imgIndex) => {
-            allPromise.push(this.loadAndCacheImg(imgName, cellIndex, imgIndex))
+        ; (<(keyof typeof willUpdateImgs)[]>Object.keys(willUpdateImgs)).forEach(imgName => {
+          const willUpdate = willUpdateImgs[imgName]
+          // 循环遍历所有图片
+          const allPromise: Promise<void>[] = []
+          willUpdate && willUpdate.forEach((imgs, cellIndex) => {
+            imgs && imgs.forEach((imgInfo, imgIndex) => {
+              allPromise.push(this.loadAndCacheImg(imgName, cellIndex, imgIndex))
+            })
+          })
+          Promise.all(allPromise).then(() => {
+            this.drawOffscreenCanvas()
+            this.draw()
+            resolve()
           })
         })
-        Promise.all(allPromise).then(() => {
-          this.drawOffscreenCanvas()
-          this.draw()
-          resolve()
-        })
-      })
     })
   }
 
@@ -243,7 +254,7 @@ export default class SlotMachine extends Lucky {
    * @param imgName 模块对应的图片缓存
    * @param imgIndex 图片索引
    */
-  private async loadAndCacheImg (
+  private async loadAndCacheImg(
     cellName: 'blocks' | 'prizes',
     cellIndex: number,
     imgIndex: number
@@ -270,7 +281,7 @@ export default class SlotMachine extends Lucky {
   /**
    * 绘制离屏canvas
    */
-  protected drawOffscreenCanvas (): void {
+  protected drawOffscreenCanvas(): void {
     const { _defaultConfig, _defaultStyle } = this
     const { w, h } = this.drawBlocks()!
     // 计算单一奖品格子的宽度和高度
@@ -298,7 +309,7 @@ export default class SlotMachine extends Lucky {
       const cellY = cellHeight * slotIndex
       let lengthOfCopy = 0
       // 绘制奖品
-      const newPrizes = getSortedArrayByIndex(this.prizes, slot.order||this.defaultOrder)
+      const newPrizes = getSortedArrayByIndex(this.prizes, slot.order || this.defaultOrder)
       // 如果没有奖品则打断逻辑
       if (!newPrizes.length) return
       newPrizes.forEach((cell, cellIndex) => {
@@ -320,7 +331,7 @@ export default class SlotMachine extends Lucky {
         }
         // 绘制图片
         cell.imgs && cell.imgs.forEach((imgInfo, imgIndex) => {
-          const cellImg = this.ImageCache.get(imgInfo.src)
+          const cellImg = this.getImageCache(imgInfo.src)
           if (!cellImg) return
           const [trueWidth, trueHeight] = this.computedWidthAndHeight(cellImg, imgInfo, cellWidth, cellHeight)
           const [xAxis, yAxis] = [
@@ -382,10 +393,10 @@ export default class SlotMachine extends Lucky {
   /**
    * 绘制背景区域
    */
-  protected drawBlocks (): SlotMachine['prizeArea'] {
+  protected drawBlocks(): SlotMachine['prizeArea'] {
     const { config, ctx, _defaultConfig, _defaultStyle } = this
     // 绘制背景区域, 并计算奖品区域
-    return this.prizeArea = this.blocks.reduce(({x, y, w, h}, block, blockIndex) => {
+    return this.prizeArea = this.blocks.reduce(({ x, y, w, h }, block, blockIndex) => {
       const [paddingTop, paddingBottom, paddingLeft, paddingRight] = computePadding(block, this.getLength.bind(this))
       const r = block.borderRadius ? this.getLength(block.borderRadius) : 0
       // 绘制边框
@@ -397,7 +408,7 @@ export default class SlotMachine extends Lucky {
       }
       // 绘制图片
       block.imgs && block.imgs.forEach((imgInfo, imgIndex) => {
-        const blockImg = this.ImageCache.get(imgInfo.src)
+        const blockImg = this.getImageCache(imgInfo.src)
         if (!blockImg) return
         // 绘制图片
         const [trueWidth, trueHeight] = this.computedWidthAndHeight(blockImg, imgInfo, w, h)
@@ -416,7 +427,7 @@ export default class SlotMachine extends Lucky {
   /**
    * 绘制老虎机抽奖
    */
-  protected draw (): void {
+  protected draw(): void {
     const { config, ctx, _defaultConfig, _defaultStyle } = this
     // 触发绘制前回调
     config.beforeDraw?.call(this, ctx)
@@ -456,7 +467,7 @@ export default class SlotMachine extends Lucky {
   /**
    * 刻舟求剑
    */
-  private carveOnGunwaleOfAMovingBoat (): void {
+  private carveOnGunwaleOfAMovingBoat(): void {
     const { _defaultConfig, prizeFlag, cellAndSpacing } = this
     // 记录开始停止的时间戳
     this.endTime = Date.now()
@@ -483,7 +494,7 @@ export default class SlotMachine extends Lucky {
   /**
    * 对外暴露: 开始抽奖方法
    */
-   public play (): void {
+  public play(): void {
     if (this.step !== 0) return
     // 记录开始游戏的时间
     this.startTime = Date.now()
@@ -497,7 +508,7 @@ export default class SlotMachine extends Lucky {
     this.run()
   }
 
-  public stop (index: number | number[]): void {
+  public stop(index: number | number[]): void {
     if (this.step === 0 || this.step === 3) return
     // 设置中奖索引
     if (typeof index === 'number') {
@@ -528,7 +539,7 @@ export default class SlotMachine extends Lucky {
    * 让游戏动起来
    * @param num 记录帧动画执行多少次
    */
-  private run (num: number = 0): void {
+  private run(num: number = 0): void {
     const { rAF, step, prizeFlag, _defaultConfig, cellAndSpacing, slots } = this
     const { accelerationTime, decelerationTime } = _defaultConfig
     // 游戏结束
@@ -595,12 +606,12 @@ export default class SlotMachine extends Lucky {
   }
 
   // 根据mode置换数值
-  private displacement<T> (a: T, b: T): T {
+  private displacement<T>(a: T, b: T): T {
     return this._defaultConfig.mode === 'horizontal' ? b : a
   }
 
   // 根据mode计算宽高
-  private displacementWidthOrHeight () {
+  private displacementWidthOrHeight() {
     const mode = this._defaultConfig.mode
     const slotsLen = this.slots.length
     const { colSpacing, rowSpacing } = this._defaultConfig

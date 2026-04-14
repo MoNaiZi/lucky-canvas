@@ -287,6 +287,7 @@ declare class LuckyWheel extends Lucky {
      * @param data 抽奖数据
      */
     constructor(config: UserConfigType, data: LuckyWheelConfig);
+    protected getImageCache(key: any): any;
     protected resize(): void;
     protected initLucky(): void;
     /**
@@ -483,6 +484,7 @@ declare class LuckyGrid extends Lucky {
      * @param data 抽奖数据
      */
     constructor(config: UserConfigType, data: LuckyGridConfig);
+    protected getImageCache(key: any): any;
     protected resize(): void;
     protected initLucky(): void;
     /**
@@ -676,6 +678,7 @@ declare class SlotMachine extends Lucky {
      * @param data 抽奖数据
      */
     constructor(config: UserConfigType, data: SlotMachineConfig);
+    protected getImageCache(key: any): any;
     protected resize(): void;
     protected initLucky(): void;
     /**

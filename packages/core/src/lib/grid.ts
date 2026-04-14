@@ -79,7 +79,7 @@ export default class LuckyGrid extends Lucky {
    * @param config 配置项
    * @param data 抽奖数据
    */
-  constructor (config: UserConfigType, data: LuckyGridConfig) {
+  constructor(config: UserConfigType, data: LuckyGridConfig) {
     super(config, {
       width: data.width,
       height: data.height
@@ -93,13 +93,24 @@ export default class LuckyGrid extends Lucky {
     this.init()
   }
 
+  protected getImageCache(
+    key: any
+  ): any {
+    const res = this.ImageCache.get(key)
+    function unwrapImg(img: any) {
+      return img?.__v_raw || img?.raw || img
+    }
+
+    return unwrapImg(res)
+  }
+
   protected resize(): void {
     super.resize()
     this.draw()
     this.config.afterResize?.()
   }
 
-  protected initLucky (): void {
+  protected initLucky(): void {
     this.cellWidth = 0
     this.cellHeight = 0
     this.startTime = 0
@@ -119,7 +130,7 @@ export default class LuckyGrid extends Lucky {
    * 初始化数据
    * @param data
    */
-  private initData (data: LuckyGridConfig): void {
+  private initData(data: LuckyGridConfig): void {
     this.$set(this, 'width', data.width)
     this.$set(this, 'height', data.height)
     this.$set(this, 'rows', Number(data.rows) || 3)
@@ -139,7 +150,7 @@ export default class LuckyGrid extends Lucky {
   /**
    * 初始化属性计算
    */
-  private initComputed (): void {
+  private initComputed(): void {
     // 默认配置
     this.$computed(this, '_defaultConfig', () => {
       const config = {
@@ -181,7 +192,7 @@ export default class LuckyGrid extends Lucky {
   /**
    * 初始化观察者
    */
-  private initWatch (): void {
+  private initWatch(): void {
     // 重置宽度
     this.$watch('width', (newVal: string | number) => {
       this.data.width = newVal
@@ -216,7 +227,7 @@ export default class LuckyGrid extends Lucky {
   /**
    * 初始化 canvas 抽奖
    */
-  public async init (): Promise<void> {
+  public async init(): Promise<void> {
     this.initLucky()
     const { config } = this
     // 初始化前回调函数
@@ -229,7 +240,7 @@ export default class LuckyGrid extends Lucky {
     config.afterInit?.call(this)
   }
 
-  private initImageCache (): Promise<void> {
+  private initImageCache(): Promise<void> {
     return new Promise((resolve) => {
       const btnImgs = this.buttons.map(btn => btn.imgs)
       if (this.button) btnImgs.push(this.button.imgs)
@@ -238,20 +249,20 @@ export default class LuckyGrid extends Lucky {
         prizes: this.prizes.map(prize => prize.imgs),
         buttons: btnImgs,
       }
-      ;(<(keyof typeof willUpdateImgs)[]>Object.keys(willUpdateImgs)).forEach(imgName => {
-        const willUpdate = willUpdateImgs[imgName]
-        // 循环遍历所有图片
-        const allPromise: Promise<void>[] = []
-        willUpdate && willUpdate.forEach((imgs, cellIndex) => {
-          imgs && imgs.forEach((imgInfo, imgIndex) => {
-            allPromise.push(this.loadAndCacheImg(imgName, cellIndex, imgIndex))
+        ; (<(keyof typeof willUpdateImgs)[]>Object.keys(willUpdateImgs)).forEach(imgName => {
+          const willUpdate = willUpdateImgs[imgName]
+          // 循环遍历所有图片
+          const allPromise: Promise<void>[] = []
+          willUpdate && willUpdate.forEach((imgs, cellIndex) => {
+            imgs && imgs.forEach((imgInfo, imgIndex) => {
+              allPromise.push(this.loadAndCacheImg(imgName, cellIndex, imgIndex))
+            })
+          })
+          Promise.all(allPromise).then(() => {
+            this.draw()
+            resolve()
           })
         })
-        Promise.all(allPromise).then(() => {
-          this.draw()
-          resolve()
-        })
-      })
     })
   }
 
@@ -259,25 +270,25 @@ export default class LuckyGrid extends Lucky {
    * canvas点击事件
    * @param e 事件参数
    */
-  protected handleClick (e: MouseEvent): void {
+  protected handleClick(e: MouseEvent): void {
     const { ctx } = this
-    ;[
-      ...this.buttons,
-      this.button
-    ].forEach(btn => {
-      if (!btn) return
-      const [x, y, width, height] = this.getGeometricProperty([
-        btn.x, btn.y, btn.col || 1, btn.row || 1
-      ])
-      ctx.beginPath()
-      ctx.rect(x, y, width, height)
-      if (!ctx.isPointInPath(e.offsetX, e.offsetY)) return
-      if (this.step !== 0) return
-      // 如果btn里有单独的回调方法, 优先触发
-      if (typeof btn.callback === 'function') btn.callback.call(this, btn)
-      // 最后触发公共回调
-      this.startCallback?.(e, btn)
-    })
+      ;[
+        ...this.buttons,
+        this.button
+      ].forEach(btn => {
+        if (!btn) return
+        const [x, y, width, height] = this.getGeometricProperty([
+          btn.x, btn.y, btn.col || 1, btn.row || 1
+        ])
+        ctx.beginPath()
+        ctx.rect(x, y, width, height)
+        if (!ctx.isPointInPath(e.offsetX, e.offsetY)) return
+        if (this.step !== 0) return
+        // 如果btn里有单独的回调方法, 优先触发
+        if (typeof btn.callback === 'function') btn.callback.call(this, btn)
+        // 最后触发公共回调
+        this.startCallback?.(e, btn)
+      })
   }
 
   /**
@@ -287,7 +298,7 @@ export default class LuckyGrid extends Lucky {
    * @param imgName 模块对应的图片缓存
    * @param imgIndex 图片索引
    */
-  private async loadAndCacheImg (
+  private async loadAndCacheImg(
     cellName: 'blocks' | 'prizes' | 'buttons',
     cellIndex: number,
     imgIndex: number
@@ -328,7 +339,7 @@ export default class LuckyGrid extends Lucky {
   /**
    * 绘制九宫格抽奖
    */
-  protected draw (): void {
+  protected draw(): void {
     const { config, ctx, _defaultConfig, _defaultStyle, _activeStyle } = this
     // 触发绘制前回调
     config.beforeDraw?.call(this, ctx)
@@ -345,7 +356,7 @@ export default class LuckyGrid extends Lucky {
       cell.row = cell.row || 1
     })
     // 计算获取奖品区域的几何信息
-    this.prizeArea = this.blocks.reduce(({x, y, w, h}, block, blockIndex) => {
+    this.prizeArea = this.blocks.reduce(({ x, y, w, h }, block, blockIndex) => {
       const [paddingTop, paddingBottom, paddingLeft, paddingRight] = computePadding(block, this.getLength.bind(this))
       const r = block.borderRadius ? this.getLength(block.borderRadius) : 0
       // 绘制边框
@@ -357,7 +368,7 @@ export default class LuckyGrid extends Lucky {
       }
       // 绘制图片
       block.imgs && block.imgs.forEach((imgInfo, imgIndex) => {
-        const blockImg = this.ImageCache.get(imgInfo.src)
+        const blockImg = this.getImageCache(imgInfo.src)
         if (!blockImg) return
         // 绘制图片
         const [trueWidth, trueHeight] = this.computedWidthAndHeight(blockImg, imgInfo, w, h)
@@ -425,8 +436,8 @@ export default class LuckyGrid extends Lucky {
       }
       // 绘制图片
       cell.imgs && cell.imgs.forEach((imgInfo, imgIndex) => {
-        const cellImg = this.ImageCache.get(imgInfo.src)
-        const activeImg = this.ImageCache.get(imgInfo['activeSrc'])
+        const cellImg = this.getImageCache(imgInfo.src)
+        const activeImg = this.getImageCache(imgInfo['activeSrc'])
         if (!cellImg) return
         const renderImg = (isActive && activeImg) || cellImg
         if (!renderImg) return
@@ -491,7 +502,7 @@ export default class LuckyGrid extends Lucky {
    * @param background
    * @param isActive
    */
-  private handleBackground (
+  private handleBackground(
     x: number,
     y: number,
     width: number,
@@ -509,7 +520,7 @@ export default class LuckyGrid extends Lucky {
   /**
    * 刻舟求剑
    */
-  private carveOnGunwaleOfAMovingBoat (): void {
+  private carveOnGunwaleOfAMovingBoat(): void {
     const { _defaultConfig, prizeFlag, currIndex } = this
     this.endTime = Date.now()
     const stopIndex = this.stopIndex = currIndex
@@ -530,7 +541,7 @@ export default class LuckyGrid extends Lucky {
   /**
    * 对外暴露: 开始抽奖方法
    */
-  public play (): void {
+  public play(): void {
     if (this.step !== 0) return
     // 记录游戏开始的时间
     this.startTime = Date.now()
@@ -548,7 +559,7 @@ export default class LuckyGrid extends Lucky {
    * 对外暴露: 缓慢停止方法
    * @param index 中奖索引
    */
-  public stop (index?: number): void {
+  public stop(index?: number): void {
     if (this.step === 0 || this.step === 3) return
     // 如果没有传递中奖索引, 则通过range属性计算一个
     if (!index && index !== 0) {
@@ -569,7 +580,7 @@ export default class LuckyGrid extends Lucky {
    * 实际开始执行方法
    * @param num 记录帧动画执行多少次
    */
-  private run (num: number = 0): void {
+  private run(num: number = 0): void {
     const { rAF, step, prizes, prizeFlag, _defaultConfig } = this
     const { accelerationTime, decelerationTime, speed } = _defaultConfig
     // 结束游戏
@@ -625,7 +636,7 @@ export default class LuckyGrid extends Lucky {
    * @param { array } [...矩阵坐标, col, row]
    * @return { array } [...真实坐标, width, height]
    */
-  private getGeometricProperty ([x, y, col = 1, row = 1]: number[]) {
+  private getGeometricProperty([x, y, col = 1, row = 1]: number[]) {
     const { cellWidth, cellHeight } = this
     const gutter = this._defaultConfig.gutter
     let res = [
@@ -644,7 +655,7 @@ export default class LuckyGrid extends Lucky {
    * @param x
    * @param y
    */
-  protected conversionAxis (x: number, y: number): [number, number] {
+  protected conversionAxis(x: number, y: number): [number, number] {
     const { config } = this
     return [x / config.dpr, y / config.dpr]
   }
