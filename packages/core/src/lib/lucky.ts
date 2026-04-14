@@ -113,7 +113,7 @@ export default class Lucky {
 
   // 清空画布
   public clearCanvas(): void {
-    console.log('清空画布')
+
     const [width, height] = [this.boxWidth, this.boxHeight]
     this.ctx.clearRect(-width, -height, width * 2, height * 2)
   }
@@ -314,10 +314,7 @@ export default class Lucky {
       return [imgObj.width * (trueHeight / imgObj.height), trueHeight]
     }
 
-    console.log('imgObj', [
-      this.getLength(imgInfo.width, maxWidth),
-      this.getLength(imgInfo.height, maxHeight)
-    ])
+
     // 如果宽度和高度都填写了, 就如实计算
     return [
       this.getLength(imgInfo.width, maxWidth),
