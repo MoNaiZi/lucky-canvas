@@ -70,8 +70,6 @@ export default defineComponent({
     initLucky () {
       this.lucky = new SlotMachine({
         flag: 'WEB',
-        width: String(this.width),
-        height: String(this.height),
         divElement: this.$refs.myLucky as HTMLDivElement,
         rAF: window.requestAnimationFrame,
         setTimeout: window.setTimeout,
@@ -80,6 +78,8 @@ export default defineComponent({
         clearInterval: window.clearInterval,
       }, {
         ...this.$props as any,
+        width: String(this.width),
+        height: String(this.height),
         start: (e: Event) => {
           this.$emit('start', e)
         },

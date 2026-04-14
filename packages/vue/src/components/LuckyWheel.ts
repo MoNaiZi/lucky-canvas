@@ -77,8 +77,6 @@ export default defineComponent({
     initLucky () {
       this.lucky = new LuckyWheel({
         flag: 'WEB',
-        width: String(this.width),
-        height: String(this.height),
         divElement: this.$refs.myLucky as HTMLDivElement,
         rAF: window.requestAnimationFrame,
         setTimeout: window.setTimeout,
@@ -87,6 +85,8 @@ export default defineComponent({
         clearInterval: window.clearInterval,
       }, {
         ...this.$props as any,
+        width: String(this.width),
+        height: String(this.height),
         start: (e) => {
           this.$emit('start', e)
         },

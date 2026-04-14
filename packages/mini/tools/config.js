@@ -50,10 +50,10 @@ module.exports = {
             cacheDirectory: true,
           },
         }],
-        exclude: /node_modules/
+        exclude: /node_modules|core[\\/]dist/
       }, {
         test: /\.ts$/,
-        exclude: /node_modules/,
+        exclude: /node_modules|core[\\/]dist/,
         use: [{
           loader: 'thread-loader',
         }, {

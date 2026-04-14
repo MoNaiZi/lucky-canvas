@@ -34,10 +34,14 @@ export default [
       },
     ],
     plugins: [
-      ts(),
-      json(),
-      resolve(),
+      ts({
+        include: 'src/**',
+      }),
+      resolve({
+        extensions: ['.ts', '.js', '.json'],
+      }),
       commonjs(),
+      json(),
       PostCSS(),
       terser(),
     ],
