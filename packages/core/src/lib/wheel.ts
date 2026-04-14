@@ -63,6 +63,7 @@ export default class LuckyWheel extends Lucky {
    * @param data 抽奖数据
    */
   constructor(config: UserConfigType, data: LuckyWheelConfig) {
+    console.log('constructor', data)
     super(config, {
       width: data.width,
       height: data.height
@@ -74,6 +75,7 @@ export default class LuckyWheel extends Lucky {
     config.beforeCreate?.call(this)
     // 首次初始化
     this.init()
+    console.log('初始化')
   }
 
   protected resize(): void {
@@ -106,6 +108,7 @@ export default class LuckyWheel extends Lucky {
    * @param data
    */
   private initData(data: LuckyWheelConfig): void {
+    console.log('initData', data)
     this.$set(this, 'width', data.width)
     this.$set(this, 'height', data.height)
     this.$set(this, 'blocks', data.blocks || [])
@@ -162,6 +165,7 @@ export default class LuckyWheel extends Lucky {
     })
     // 重置高度
     this.$watch('height', (newVal: string | number) => {
+      console.log('initWatch this.data.height', this.data)
       this.data.height = newVal
       this.resize()
     })
@@ -294,6 +298,7 @@ export default class LuckyWheel extends Lucky {
    */
   protected draw(): void {
     const { config, ctx, _defaultConfig, _defaultStyle } = this
+    console.log('draw')
     // 触发绘制前回调
     config.beforeDraw?.call(this, ctx)
     // 清空画布
